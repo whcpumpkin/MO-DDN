@@ -6,15 +6,22 @@ This repo is the official implementation of NeurIPS 2024 paper, [Multi-Object De
 
 ## TODOs (Under Development):
 - [ ] README
-- [ ] Environment Code
+- [x] Environment Code
 - [ ] Modified HSSD Dataset
-- [ ] Instruction Dataset
+- [x] Instruction Dataset
 - [ ] Trajectory Dataset
 - [ ] Utils Code
 - [ ] Training
 - [ ] Testing
 
 ## Warning: I am currently refactoring my code. Although all code committed to the repository has been tested, there may still be some minor issues.  Feel free to ask any questions.
+
+## Installation
+We use habitat-lab and habitat-sim as our simulation environment.
+```
+cd habitat-lab
+pip install -e .
+```
 
 ## Contact
 If you have any suggestion or questions, please feel free to contact us:
