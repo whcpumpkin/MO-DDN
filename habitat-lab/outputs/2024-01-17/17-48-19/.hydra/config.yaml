@@ -1,0 +1,333 @@
+habitat_baselines:
+  evaluate: false
+  trainer_name: ver
+  updater_name: PPO
+  distrib_updater_name: DDPPO
+  torch_gpu_id: 0
+  tensorboard_dir: data/training/objectnav/hssd-hab/tb
+  writer_type: tb
+  video_dir: data/training/objectnav/hssd-hab/video_dir
+  video_fps: 10
+  test_episode_count: -1
+  eval_ckpt_path_dir: data/training/objectnav/hssd-hab/checkpoints/
+  num_environments: 24
+  num_processes: -1
+  rollout_storage_name: RolloutStorage
+  checkpoint_folder: data/training/objectnav/hssd-hab/checkpoints
+  num_updates: 270000
+  num_checkpoints: 500
+  checkpoint_interval: -1
+  total_num_steps: -1.0
+  log_interval: 10
+  log_file: train.log
+  force_blind_policy: false
+  verbose: true
+  vector_env_factory:
+    _target_: habitat_baselines.common.HabitatVectorEnvFactory
+  eval_keys_to_include_in_name: []
+  force_torch_single_threaded: true
+  wb:
+    project_name: ''
+    entity: ''
+    group: ''
+    run_name: ''
+  load_resume_state_config: true
+  eval:
+    split: val
+    use_ckpt_config: true
+    should_load_ckpt: true
+    evals_per_ep: 1
+    video_option: []
+    extra_sim_sensors: {}
+  profiling:
+    capture_start_step: -1
+    num_steps_to_capture: -1
+  should_log_single_proc_infos: false
+  on_save_ckpt_callback: null
+  rl:
+    agent:
+      type: SingleAgentAccessMgr
+    preemption:
+      append_slurm_job_id: false
+      save_resume_state_interval: 100
+      save_state_batch_only: false
+    policy:
+      name: PointNavResNetPolicy
+      action_distribution_type: categorical
+      action_dist:
+        use_log_std: true
+        use_softplus: false
+        std_init: ???
+        log_std_init: 0.0
+        use_std_param: false
+        clamp_std: true
+        min_std: 1.0e-06
+        max_std: 1
+        min_log_std: -5
+        max_log_std: 2
+        action_activation: tanh
+        scheduled_std: false
+      obs_transforms: {}
+      hierarchical_policy: ???
+    ppo:
+      clip_param: 0.2
+      ppo_epoch: 4
+      num_mini_batch: 2
+      value_loss_coef: 0.5
+      entropy_coef: 0.01
+      lr: 0.00025
+      eps: 1.0e-05
+      max_grad_norm: 0.2
+      num_steps: 64
+      use_gae: true
+      use_linear_lr_decay: false
+      use_linear_clip_decay: false
+      gamma: 0.99
+      tau: 0.95
+      reward_window_size: 50
+      use_normalized_advantage: false
+      hidden_size: 512
+      entropy_target_factor: 0.0
+      use_adaptive_entropy_pen: false
+      use_clipped_value_loss: true
+      use_double_buffered_sampler: false
+    ddppo:
+      sync_frac: 0.6
+      distrib_backend: NCCL
+      rnn_type: LSTM
+      num_recurrent_layers: 2
+      backbone: resnet50_clip_avgpool
+      pretrained_weights: data/ddppo-models/gibson-2plus-resnet50.pth
+      pretrained: false
+      pretrained_encoder: false
+      train_encoder: false
+      reset_critic: true
+      force_distributed: false
+    ver:
+      variable_experience: true
+      num_inference_workers: 1
+      overlap_rollouts_and_learn: true
+    auxiliary_losses: {}
+habitat:
+  seed: 100
+  env_task: GymHabitatEnv
+  env_task_gym_dependencies: []
+  env_task_gym_id: ''
+  environment:
+    max_episode_steps: 500
+    max_episode_seconds: 10000000
+    iterator_options:
+      cycle: true
+      shuffle: true
+      group_by_scene: true
+      num_episode_sample: -1
+      max_scene_repeat_episodes: -1
+      max_scene_repeat_steps: 50000
+      step_repetition_range: 0.2
+  simulator:
+    type: Sim-v0
+    forward_step_size: 0.25
+    turn_angle: 30
+    create_renderer: false
+    requires_textures: true
+    auto_sleep: false
+    step_physics: true
+    concur_render: false
+    needs_markers: true
+    update_articulated_agent: true
+    scene: data/scene_datasets/habitat-test-scenes/van-gogh-room.glb
+    scene_dataset: data/scene_datasets/hssd-hab/hssd-hab.scene_dataset_config.json
+    additional_object_paths: []
+    seed: ${habitat.seed}
+    default_agent_id: 0
+    debug_render: false
+    debug_render_articulated_agent: false
+    kinematic_mode: false
+    should_setup_semantic_ids: true
+    debug_render_goal: true
+    robot_joint_start_noise: 0.0
+    ctrl_freq: 120.0
+    ac_freq_ratio: 4
+    load_objs: true
+    hold_thresh: 0.15
+    grasp_impulse: 10000.0
+    agents:
+      main_agent:
+        height: 0.88
+        radius: 0.18
+        grasp_managers: 1
+        sim_sensors:
+          rgb_sensor:
+            type: HabitatSimRGBSensor
+            height: 256
+            width: 256
+            position:
+            - 0.0
+            - 0.88
+            - 0.0
+            orientation:
+            - 0.0
+            - 0.0
+            - 0.0
+            hfov: 79
+            sensor_subtype: PINHOLE
+            noise_model: None
+            noise_model_kwargs: {}
+          depth_sensor:
+            type: HabitatSimDepthSensor
+            height: 256
+            width: 256
+            position:
+            - 0.0
+            - 0.88
+            - 0.0
+            orientation:
+            - 0.0
+            - 0.0
+            - 0.0
+            hfov: 79
+            sensor_subtype: PINHOLE
+            noise_model: None
+            noise_model_kwargs: {}
+            min_depth: 0.5
+            max_depth: 5.0
+            normalize_depth: true
+        is_set_start_state: false
+        start_position:
+        - 0.0
+        - 0.0
+        - 0.0
+        start_rotation:
+        - 0.0
+        - 0.0
+        - 0.0
+        - 1.0
+        joint_start_noise: 0.1
+        joint_start_override: null
+        articulated_agent_urdf: data/robots/hab_fetch/robots/hab_fetch.urdf
+        articulated_agent_type: FetchRobot
+        ik_arm_urdf: data/robots/hab_fetch/robots/fetch_onlyarm.urdf
+        motion_data_path: ''
+    agents_order: ???
+    default_agent_navmesh: true
+    navmesh_include_static_objects: false
+    habitat_sim_v0:
+      gpu_device_id: 0
+      gpu_gpu: false
+      allow_sliding: false
+      frustum_culling: true
+      enable_physics: false
+      physics_config_file: ./data/default.physics_config.json
+      leave_context_with_background_renderer: false
+      enable_gfx_replay_save: false
+    ep_info: null
+    object_ids_start: 100
+    renderer:
+      enable_batch_renderer: false
+      composite_files: null
+      classic_replay_renderer: false
+  task:
+    physics_target_sps: 60.0
+    reward_measure: distance_to_goal_reward
+    success_measure: spl
+    success_reward: 2.5
+    slack_reward: -0.001
+    end_on_success: true
+    type: ObjectNav-v1
+    lab_sensors:
+      objectgoal_sensor:
+        type: ObjectGoalSensor
+        goal_spec: TASK_CATEGORY_ID
+        goal_spec_max_val: 50
+      compass_sensor:
+        type: CompassSensor
+      gps_sensor:
+        type: GPSSensor
+        dimensionality: 2
+    measurements:
+      distance_to_goal:
+        type: DistanceToGoal
+        distance_to: VIEW_POINTS
+      success:
+        type: Success
+        success_distance: 0.1
+      spl:
+        type: SPL
+      soft_spl:
+        type: SoftSPL
+      distance_to_goal_reward:
+        type: DistanceToGoalReward
+    rank0_env0_measure_names:
+    - habitat_perf
+    rank0_measure_names: []
+    goal_sensor_uuid: objectgoal
+    count_obj_collisions: true
+    settle_steps: 5
+    constraint_violation_ends_episode: true
+    constraint_violation_drops_object: false
+    force_regenerate: false
+    should_save_to_cache: false
+    object_in_hand_sample_prob: 0.167
+    min_start_distance: 3.0
+    render_target: true
+    physics_stability_steps: 1
+    num_spawn_attempts: 200
+    spawn_max_dist_to_obj: 2.0
+    base_angle_noise: 0.523599
+    recep_place_shrink_factor: 0.8
+    ee_sample_factor: 0.2
+    ee_exclude_region: 0.0
+    base_noise: 0.05
+    spawn_region_scale: 0.2
+    joint_max_impulse: -1.0
+    desired_resting_position:
+    - 0.5
+    - 0.0
+    - 1.0
+    use_marker_t: true
+    cache_robot_init: false
+    success_state: 0.0
+    should_enforce_target_within_reach: false
+    task_spec_base_path: habitat/task/rearrange/pddl/
+    task_spec: ''
+    pddl_domain_def: replica_cad
+    obj_succ_thresh: 0.3
+    enable_safe_drop: false
+    art_succ_thresh: 0.15
+    robot_at_thresh: 2.0
+    actions:
+      stop:
+        type: StopAction
+        agent_index: 0
+      move_forward:
+        type: MoveForwardAction
+        agent_index: 0
+        tilt_angle: 15
+      turn_left:
+        type: TurnLeftAction
+        agent_index: 0
+        tilt_angle: 15
+      turn_right:
+        type: TurnRightAction
+        agent_index: 0
+        tilt_angle: 15
+      look_up:
+        type: LookUpAction
+        agent_index: 0
+        tilt_angle: 30
+      look_down:
+        type: LookDownAction
+        agent_index: 0
+        tilt_angle: 30
+  dataset:
+    type: ObjectNav-v1
+    split: train
+    scenes_dir: data/scene_datasets/hssd-hab/scenes
+    content_scenes:
+    - '*'
+    data_path: data/datasets/objectnav/hssd-hab_v0.2.5/{split}/{split}.json.gz
+  gym:
+    obs_keys: null
+    action_keys: null
+    achieved_goal_keys: []
+    desired_goal_keys: []

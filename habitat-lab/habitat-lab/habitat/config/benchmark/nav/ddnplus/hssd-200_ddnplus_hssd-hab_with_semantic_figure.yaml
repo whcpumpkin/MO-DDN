@@ -1,0 +1,46 @@
+# @package _global_
+
+defaults:
+  - /habitat: habitat_config_base
+  - /habitat/task: ddnplus
+  - /habitat/simulator/agents@habitat.simulator.agents.main_agent: rgbds_agent
+  - /habitat/dataset/ddnplus: hssd-hab
+  - _self_
+
+habitat:
+  environment:
+    max_episode_steps: 500
+
+  simulator:
+    scene_dataset: "data/scene_datasets/hssd-hab/hssd-hab.scene_dataset_config.json"
+    navmesh_include_static_objects: True
+    scene_object_string_to_name: "data/datasets/ddnplus/hssd-hab_v0.2.5/train/object_string_to_name.json"
+    turn_angle: 30
+    agents:
+      main_agent:
+        sim_sensors:
+          semantic_sensor:
+            width: 2160
+            height: 2160
+            hfov: 79
+            position: [0, 0.88, 0]
+          rgb_sensor:
+            width: 2160
+            height: 2160
+            hfov: 79
+            position: [0, 0.88, 0]
+          depth_sensor:
+            width: 2160
+            height: 2160
+            hfov: 79
+            min_depth: 0.2
+            max_depth: 10.0
+            position: [0, 0.88, 0]
+            normalize_depth: False
+        height: 0.88
+        radius: 0.18
+        agent_max_climb: 0.5
+    habitat_sim_v0:
+      gpu_device_id: 0
+      allow_sliding: False
+      

@@ -1,0 +1,52 @@
+
+defaults:
+  - task_config_base
+  - actions:
+    - stop
+    - move_forward
+    - turn_left
+    - turn_right
+    - look_up
+    - look_down
+    - find
+    - leave
+  - measurements:
+    - ddnplus_distance_to_goal
+    - ddnplus_distance_to_one_goal
+    - ddnplus_basic_success
+    - ddnplus_preference_success
+    - ddnplus_basic_spl
+    - ddnplus_preference_spl
+    # - ddnplus_soft_spl
+    - ddnplus_distance_to_goal_reward
+    - ddnplus_distance_to_one_goal_reward
+  - lab_sensors:
+    - ddnplusgoal_sensor
+    - ddnpluscompass_sensor
+    - gps_sensor
+  - _self_
+
+actions:
+  look_up:
+    tilt_angle: 30
+  look_down:
+    tilt_angle: 30
+
+type: DDNPlusNav-v1
+end_on_success: True
+reward_measure: "ddnplus_distance_to_goal_reward"
+success_measure: "ddnplus_basic_spl"
+
+goal_sensor_uuid: ddnplusgoal
+
+measurements:
+  # ddn_distance_to_goal:
+  #   distance_to: VIEW_POINTS
+  ddnplus_basic_success:
+    ddnplus_success_distance: 1
+    ddnplus_find_times: 5
+
+  ddnplus_preference_success:
+    ddnplus_success_distance: 1
+    ddnplus_find_times: 5
+
