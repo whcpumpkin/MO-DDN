@@ -46,7 +46,7 @@ If you have any suggestion or questions, please feel free to contact us:
 Peiqi Liu: [peiqiliu@stu.pku.edu.cn](mailto:peiqiliu@stu.pku.edu.cn)
 
 [Hao Dong](https://zsdonghao.github.io/): [hao.dong@pku.edu.cn](mailto:hao.dong@pku.edu.cn)
-
+****
 ## Citation
 
 ```bibtex
@@ -61,4 +61,4 @@ Peiqi Liu: [peiqiliu@stu.pku.edu.cn](mailto:peiqiliu@stu.pku.edu.cn)
 ## Thanks
 the fold of ''habitat-lab''  is modified from https://github.com/facebookresearch/habitat-lab, with version 0.2.5.
 
-we extend the object label metadata in the HSSD dataset and use it in our project. The original HSSD dataset can be found at https://github.com/3dlg-hcvc/hssd.
+we extend the object label metadata in the HSSD dataset and use it in our project. Please see [issue](https://github.com/3dlg-hcvc/hssd/issues/13) for the modification details. The original HSSD dataset can be found at https://github.com/3dlg-hcvc/hssd. 
