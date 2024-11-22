@@ -7,8 +7,9 @@ This repo is the official implementation of NeurIPS 2024 paper, [Multi-Object De
 ## TODOs (Under Development):
 - [ ] README
 - [x] Environment Code
-- [ ] Modified HSSD Dataset
+- [x] Modified HSSD Dataset
 - [x] Instruction Dataset
+- [x] Benchmark Demo
 - [ ] Trajectory Dataset
 - [ ] Utils Code
 - [ ] Training
@@ -22,20 +23,20 @@ You will download a zip file or three splited zip files containing the dataset.
 
 ```
 # Download from Hugging Face
-cd MO-DDN/habitat-lab/data
+cd MO-DDN/data
 git clone https://github.com/whcpumpkin/moddn-hssd.git
 mv ./moddn-hssd/scene_dataset* ./
 cat scene_datasets.zip.001 scene_datasets.zip.002 scene_datasets.zip.003 > scene_datasets_combined.zip
 unzip scene_datasets_combined.zip
 
 # Download from 百度网盘
-cd MO-DDN/habitat-lab/data
+cd MO-DDN/data
 cp path/to/your/downloaded/scene_dataset.zip ./
 unzip scene_dataset.zip
 ```
 
 ## Dataset Structure
-The dataset, including the modified HSSD dataset and the instruction dataset, is organized as follows(in the `MO-DDN/habitat-lab/data` directory):
+The dataset, including the modified HSSD dataset and the instruction dataset, is organized as follows(in the `MO-DDN/data` directory):
 ```
 ┌data
 │ ├datasets
@@ -55,8 +56,6 @@ The dataset, including the modified HSSD dataset and the instruction dataset, is
 
 
 
-
-
 ## Installation
 We use conda to manage our environment.
 
@@ -72,7 +71,23 @@ pip install -e .
 conda install habitat-sim=0.2.5 withbullet headless -c conda-forge -c aihabitat
 ```
 
+Then, install other dependencies:
+```
+pip install -r requirements.txt
+```
 
+## Demo
+We provide a very simple demo to show how to use our benchmark.
+```
+python demo.py --task_mode=train --scene_mode=train
+```
+`--task_mode` can be set to `train` or `val`. `--scene_mode` can be set to `train` or `val`. `train` mode means `seen` in our paper, while `val` mode means `unseen` in our paper.
+
+To ignore the habitat-sim log, you can set the following environment variables:
+
+```
+export MAGNUM_LOG=quiet HABITAT_SIM_LOG=quiet
+```
 
 ## Contact
 If you have any suggestion or questions, please feel free to contact us:
