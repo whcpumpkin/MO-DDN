@@ -160,15 +160,15 @@ class DDNPlusDistanceToGoal(Measure):
         current_position = self._sim.get_agent_state().position
         self.scene_id = self._sim.curr_scene_name.split(".scene_instance")[0]
         scene_name = self._sim.curr_scene_name.split(".scene_instance")[0]
-        if os.path.exists("habitat-lab/data/datasets/ddnplus/hssd-hab_v0.2.5/scene_object_navigable_point/{}.json".format(scene_name)):
-            with open("habitat-lab/data/datasets/ddnplus/hssd-hab_v0.2.5/scene_object_navigable_point/{}.json".format(scene_name), 'r') as f:
+        if os.path.exists("data/datasets/ddnplus/hssd-hab_v0.2.5/scene_object_navigable_point/{}.json".format(scene_name)):
+            with open("data/datasets/ddnplus/hssd-hab_v0.2.5/scene_object_navigable_point/{}.json".format(scene_name), 'r') as f:
                 self._object_to_positions = json.load(f)
         else:
             self._object_to_positions = sample_object_navigable_point(self._sim, self._task, self._sim.get_agent_state().position)
             self._object_to_positions_list = {}
             for k, v in self._object_to_positions.items():
                 self._object_to_positions_list[k] = [list(i) for i in v]
-            with open("habitat-lab/data/datasets/ddnplus/hssd-hab_v0.2.5/scene_object_navigable_point/{}.json".format(scene_name), 'w') as f:
+            with open("data/datasets/ddnplus/hssd-hab_v0.2.5/scene_object_navigable_point/{}.json".format(scene_name), 'w') as f:
                 json.dump(self._object_to_positions_list, f, indent=4)
 
         super().__init__(**kwargs)
@@ -181,15 +181,15 @@ class DDNPlusDistanceToGoal(Measure):
         self._previous_position = None
         if self.scene_id != self._sim.curr_scene_name.split(".scene_instance")[0] or self.scene_id is None:
             scene_name = self._sim.curr_scene_name.split(".scene_instance")[0]
-            if os.path.exists("habitat-lab/data/datasets/ddnplus/hssd-hab_v0.2.5/scene_object_navigable_point/{}.json".format(scene_name)):
-                with open("habitat-lab/data/datasets/ddnplus/hssd-hab_v0.2.5/scene_object_navigable_point/{}.json".format(scene_name), 'r') as f:
+            if os.path.exists("data/datasets/ddnplus/hssd-hab_v0.2.5/scene_object_navigable_point/{}.json".format(scene_name)):
+                with open("data/datasets/ddnplus/hssd-hab_v0.2.5/scene_object_navigable_point/{}.json".format(scene_name), 'r') as f:
                     self._object_to_positions = json.load(f)
             else:
                 self._object_to_positions = sample_object_navigable_point(self._sim, self._task, self._sim.get_agent_state().position)
                 self._object_to_positions_list = {}
                 for k, v in self._object_to_positions.items():
                     self._object_to_positions_list[k] = [list(i) for i in v]
-                with open("habitat-lab/data/datasets/ddnplus/hssd-hab_v0.2.5/scene_object_navigable_point/{}.json".format(scene_name), 'w') as f:
+                with open("data/datasets/ddnplus/hssd-hab_v0.2.5/scene_object_navigable_point/{}.json".format(scene_name), 'w') as f:
                     json.dump(self._object_to_positions_list, f, indent=4)
         self.scene_id = episode.scene_id
         self.update_metric(episode=episode, *args, **kwargs)  # type: ignore
@@ -237,15 +237,15 @@ class DDNPlusDistanceToOneGoal(Measure):
         current_position = self._sim.get_agent_state().position
         self.scene_id = self._sim.curr_scene_name.split(".scene_instance")[0]
         scene_name = self._sim.curr_scene_name.split(".scene_instance")[0]
-        if os.path.exists("habitat-lab/data/datasets/ddnplus/hssd-hab_v0.2.5/scene_object_navigable_point/{}.json".format(scene_name)):
-            with open("habitat-lab/data/datasets/ddnplus/hssd-hab_v0.2.5/scene_object_navigable_point/{}.json".format(scene_name), 'r') as f:
+        if os.path.exists("data/datasets/ddnplus/hssd-hab_v0.2.5/scene_object_navigable_point/{}.json".format(scene_name)):
+            with open("data/datasets/ddnplus/hssd-hab_v0.2.5/scene_object_navigable_point/{}.json".format(scene_name), 'r') as f:
                 self._object_to_positions = json.load(f)
         else:
             self._object_to_positions = sample_object_navigable_point(self._sim, self._task, self._sim.get_agent_state().position)
             self._object_to_positions_list = {}
             for k, v in self._object_to_positions.items():
                 self._object_to_positions_list[k] = [list(i) for i in v]
-            with open("habitat-lab/data/datasets/ddnplus/hssd-hab_v0.2.5/scene_object_navigable_point/{}.json".format(scene_name), 'w') as f:
+            with open("data/datasets/ddnplus/hssd-hab_v0.2.5/scene_object_navigable_point/{}.json".format(scene_name), 'w') as f:
                 json.dump(self._object_to_positions_list, f, indent=4)
         super().__init__(**kwargs)
 
@@ -256,15 +256,15 @@ class DDNPlusDistanceToOneGoal(Measure):
         self._previous_position = None
         if self.scene_id != episode.scene_id.split(".scene_instance")[0] or self.scene_id is None:
             scene_name = episode.scene_id.split('/')[-1].split(".scene_instance")[0]
-            if os.path.exists("habitat-lab/data/datasets/ddnplus/hssd-hab_v0.2.5/scene_object_navigable_point/{}.json".format(scene_name)):
-                with open("habitat-lab/data/datasets/ddnplus/hssd-hab_v0.2.5/scene_object_navigable_point/{}.json".format(scene_name), 'r') as f:
+            if os.path.exists("data/datasets/ddnplus/hssd-hab_v0.2.5/scene_object_navigable_point/{}.json".format(scene_name)):
+                with open("data/datasets/ddnplus/hssd-hab_v0.2.5/scene_object_navigable_point/{}.json".format(scene_name), 'r') as f:
                     self._object_to_positions = json.load(f)
             else:
                 self._object_to_positions = sample_object_navigable_point(self._sim, self._task, self._sim.get_agent_state().position)
                 self._object_to_positions_list = {}
                 for k, v in self._object_to_positions.items():
                     self._object_to_positions_list[k] = [list(i) for i in v]
-                with open("habitat-lab/data/datasets/ddnplus/hssd-hab_v0.2.5/scene_object_navigable_point/{}.json".format(scene_name), 'w') as f:
+                with open("data/datasets/ddnplus/hssd-hab_v0.2.5/scene_object_navigable_point/{}.json".format(scene_name), 'w') as f:
                     json.dump(self._object_to_positions_list, f, indent=4)
         current_position = self._sim.get_agent_state().position
         self._metric = 99999
@@ -725,7 +725,7 @@ class DDNPlusNavigationTask(NavigationTask):
 
     def __init__(self, config: DictConfig, sim: Simulator, dataset: Dataset = None) -> None:
         super().__init__(config, sim, dataset)
-        with open("habitat-lab/data/datasets/ddnplus/hssd-hab_v0.2.5/rotation.json", 'r') as f:
+        with open("data/datasets/ddnplus/hssd-hab_v0.2.5/rotation.json", 'r') as f:
             self.rotation = json.load(f)
 
     def overwrite_sim_config(self, config: Any, episode: Episode) -> Any:

@@ -17,7 +17,43 @@ This repo is the official implementation of NeurIPS 2024 paper, [Multi-Object De
 ## Warning: I am currently refactoring my code. Although all code committed to the repository has been tested, there may still be some minor issues.  Feel free to ask any questions.
 
 ## Download
-We modified the HSSD dataset to include more object labels. You can download the modified dataset from [OneDrive]() or [百度网盘]().
+We modified the HSSD dataset to include more object labels. You can download the modified HSSD dataset from [Hugging Face](https://huggingface.co/datasets/whcpumpkin/moddn-hssd) or [百度网盘](https://pan.baidu.com/s/1eLXxMUqsImlf47Sw71dVjw?pwd=hgg9).
+You will download a zip file or three splited zip files containing the dataset.
+
+```
+# Download from Hugging Face
+cd MO-DDN/habitat-lab/data
+git clone https://github.com/whcpumpkin/moddn-hssd.git
+mv ./moddn-hssd/scene_dataset* ./
+cat scene_datasets.zip.001 scene_datasets.zip.002 scene_datasets.zip.003 > scene_datasets_combined.zip
+unzip scene_datasets_combined.zip
+
+# Download from 百度网盘
+cd MO-DDN/habitat-lab/data
+cp path/to/your/downloaded/scene_dataset.zip ./
+unzip scene_dataset.zip
+```
+
+## Dataset Structure
+The dataset, including the modified HSSD dataset and the instruction dataset, is organized as follows(in the `MO-DDN/habitat-lab/data` directory):
+```
+┌data
+│ ├datasets
+│ │  └ddnplus
+│ │      └hssd-hab_v0.2.5
+│ │         ├scene_object_navigable_point
+│ │         ├train
+│ │         └val
+│ └scene_datasets
+│    └hssd-hab
+│        ├objects
+│        ├scene_filter_files
+│        ├scenes
+│        └...
+
+```
+
+
 
 
 
@@ -25,7 +61,7 @@ We modified the HSSD dataset to include more object labels. You can download the
 We use conda to manage our environment.
 
 ```
-conda create -n moddn python=3.9
+conda create -n moddn python=3.9 cmake=3.14
 conda activate moddn
 ```
 
