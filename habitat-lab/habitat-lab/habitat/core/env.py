@@ -102,12 +102,10 @@ class Fine_Grained_Env():
             # self._setup_episode_iterator()
             # self.current_episode = next(self.episode_iterator)
             self._current_episode = random.choice(self.episodes)
-            while len(self._current_episode.scene_ids) == 0:
+            while len(self._current_episode.scene_ids[self.args.scene_mode]) == 0:
                 self._current_episode = random.choice(self.episodes)
-            self._current_episode.scene_id = random.choice(self._current_episode.scene_ids)
-            while "data/scene_datasets/hssd-hab/scenes/106879023_174887148.scene_instance.json" not in self._current_episode.scene_ids:
-                self._current_episode = random.choice(self.episodes)
-            self._current_episode.scene_id = "data/scene_datasets/hssd-hab/scenes/106879023_174887148.scene_instance.json"
+            self._current_episode.scene_id = random.choice(self._current_episode.scene_ids[self.args.scene_mode])
+
             with read_write(self._config):
                 self._config.simulator.scene_dataset = (self.current_episode.scene_dataset_config)
                 self._config.simulator.scene = self.current_episode.scene_id
@@ -230,9 +228,9 @@ class Fine_Grained_Env():
                 # self._current_episode = next(self._episode_iterator)
                 if change_episode:
                     self._current_episode = random.choice(self.episodes)
-                    while len(self._current_episode.scene_ids) == 0:
+                    while len(self._current_episode.scene_ids[self.args.scene_mode]) == 0:
                         self._current_episode = random.choice(self.episodes)
-                    self._current_episode.scene_id = random.choice(self._current_episode.scene_ids)
+                    self._current_episode.scene_id = random.choice(self._current_episode.scene_ids[self.args.scene_mode])
                     # self._current_episode.scene_id = "data/scene_datasets/hssd-hab/scenes/106879023_174887148.scene_instance.json"
                     # print("change episode is True, reset scene_id: ", self._current_episode.scene_id)
                     # print("change is True, reset task instruction for sample_navigable_point", self._current_episode.task_instruction)
@@ -311,9 +309,9 @@ class Fine_Grained_Env():
                         num_try_to_sample_navigable_point += 1
 
                     self._current_episode = random.choice(self.episodes)
-                    while len(self._current_episode.scene_ids) == 0:
+                    while len(self._current_episode.scene_ids[self.args.scene_mode]) == 0:
                         self._current_episode = random.choice(self.episodes)
-                    self._current_episode.scene_id = random.choice(self._current_episode.scene_ids)
+                    self._current_episode.scene_id = random.choice(self._current_episode.scene_ids[self.args.scene_mode])
                     # self._current_episode.scene_id = "data/scene_datasets/hssd-hab/scenes/106879023_174887148.scene_instance.json"
                     # print("change episode for sample_navigable_point, reset scene_id: ", self._current_episode.scene_id)
                     # print("change task instruction for sample_navigable_point", self._current_episode.task_instruction)

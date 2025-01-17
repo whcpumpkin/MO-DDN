@@ -10,7 +10,7 @@ This repo is the official implementation of NeurIPS 2024 paper, [Multi-Object De
 - [x] Modified HSSD Dataset
 - [x] Instruction Dataset
 - [x] Benchmark Demo
-- [ ] Trajectory Dataset
+- [x] Trajectory Collecting Code
 - [ ] Utils Code
 - [ ] Training
 - [ ] Testing
@@ -88,6 +88,25 @@ To ignore the habitat-sim log, you can set the following environment variables:
 ```
 export MAGNUM_LOG=quiet HABITAT_SIM_LOG=quiet
 ```
+
+## Trajectory Collecting Code
+
+In MO-DDN, we collect two different kind of trajectories, `local trajectory` and `full trajectory`. We use `local trajectory` to train our Fine-Exploration Module and use `full trajectory` to train the VTN baseline. For more details, please see Sec A.3.2 and A.4.2 in our supplemental material. 
+
+
+To collect `local trajectory`, run 
+```
+python data_collection.py --running_mode=local_data_collection --workers=N --epoch=M --save_dir=path/to/save/dir --save_name=MODDN_local
+```
+
+This means that you will launch N environments, each collecting M local trajectories, for a total of N*M. Please replace `N` and `M` with two suitable integers depending on your machine's memory and CPU. For reference, my machine consists of two E5 2680V4, 128G RAM, one RTX 2080Ti 22G graphics card, and I set N=16, M=3100, which consumes about 24 hours or so to collect ~50000 local trajectories. Please note that this data can consume around 3T of space, make sure you have the space to store it.
+
+To collect `full trajectory`, run 
+```
+python data_collection.py --running_mode=full_data_collection --workers=N --epoch=M --save_dir=path/to/save/dir --save_name=VTN_full
+```
+
+For reference, my machine consists of two E5 2680V4, 128G RAM, one RTX 2080Ti 22G graphics card, and I set N=12, M=200, which consumes about 12 hours or so to collect ~20000 full trajectories.
 
 ## Contact
 If you have any suggestion or questions, please feel free to contact us:
