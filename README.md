@@ -108,6 +108,15 @@ python data_collection.py --running_mode=full_data_collection --workers=N --epoc
 
 For reference, my machine consists of two E5 2680V4, 128G RAM, one RTX 2080Ti 22G graphics card, and I set N=12, M=200, which consumes about 12 hours or so to collect ~20000 full trajectories.
 
+## Training
+
+To train the attribute model, run
+```
+python train_attribute_model.py --save_dir=path/to/save/dir --save_name=attribute_model --recon_coef=1.0 --vq_coef=1.0 --commit_coef=0.25 --matching_coef=1 --obj_attribute_coef=2 --ins_attribute_coef=2
+```
+
+then obtain a model named `attribute_model_best.pth` in the `$save_dir$/$save_name$` directory.
+
 ## Contact
 If you have any suggestion or questions, please feel free to contact us:
 
