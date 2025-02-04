@@ -35,6 +35,12 @@ cp path/to/your/downloaded/scene_dataset.zip ./
 unzip scene_dataset.zip
 ```
 
+For pretrained model, we provide the following links:
+
+百度网盘: https://pan.baidu.com/s/1eLXxMUqsImlf47Sw71dVjw?pwd=hgg9
+
+Google Drive: https://drive.google.com/drive/folders/1nKVcWHqgwyRCp5yZWY6-Wsf6ZP2E7o2x?usp=sharing
+
 ## Dataset Structure
 The dataset, including the modified HSSD dataset and the instruction dataset, is organized as follows(in the `MO-DDN/data` directory):
 ```
