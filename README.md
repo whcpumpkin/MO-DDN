@@ -11,8 +11,8 @@ This repo is the official implementation of NeurIPS 2024 paper, [Multi-Object De
 - [x] Instruction Dataset
 - [x] Benchmark Demo
 - [x] Trajectory Collecting Code
-- [ ] Utils Code
-- [ ] Training
+- [x] Utils Code
+- [x] Training
 - [ ] Testing
 
 ## Warning: I am currently refactoring my code. Although all code committed to the repository has been tested, there may still be some minor issues.  Feel free to ask any questions.
