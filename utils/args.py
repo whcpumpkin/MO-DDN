@@ -103,6 +103,7 @@ def parse_arguments():
     # IL
     parser.add_argument('--path_to_train_traj_file', type=str, default='dataset/train_traj.json', help="path to traj file")
     parser.add_argument('--path_to_val_traj_file', type=str, default='dataset/val_traj.json', help="path to traj file")
+    parser.add_argument('--path_to_raw_traj', type=str, default='MO-DDN-Traj/MO-DDN_local', help="path to traj file")
     parser.add_argument('--il_lr', type=float, default=1e-5, help="il learning rate")
     parser.add_argument('--il_batch_size', type=int, default=1, help="il batch size")
     parser.add_argument('--max_seq_len', type=int, default=20, help="max seq len")

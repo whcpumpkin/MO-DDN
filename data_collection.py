@@ -17,6 +17,9 @@ import torch
 from habitat.utils.common import draw_single_bounding_boxes_and_labels
 import torch.multiprocessing as multiprocessing
 from utils.common import ArgsObject
+import yaml
+import statistics
+from collections import Counter
 
 multiprocessing.set_start_method('spawn', force=True)
 
@@ -83,7 +86,7 @@ def local_data_collection(args, time_now, rank=0):
     object_idx_to_name = {v: k for k, v in object_name_to_idx.items()}
 
     task_name = "ddnplus"
-    habitat_config = habitat.get_config("benchmark/nav/{}/hssd-200_{}_hssd-hab_with_semantic_figure.yaml".format(task_name, task_name), overrides=["habitat.dataset.split={}".format(args.task_mode)])
+    habitat_config = habitat.get_config("benchmark/nav/{}/hssd-200_{}_hssd-hab_with_semantic.yaml".format(task_name, task_name), overrides=["habitat.dataset.split={}".format(args.task_mode)])
     envs = Fine_Grained_Env(config=habitat_config, block_size=2, object_name_to_idx=object_name_to_idx, args=args)
     # HabitatSimActions.extend_action_space("find")
     # HabitatSimActions.extend_action_space("leave")
@@ -416,13 +419,83 @@ def run_in_parallel(args, time_now, target_fn):
         p.join()  # 等待所有进程完成
 
 
+def generate_metadata(args):
+    path = args.path_to_raw_traj
+
+    with open("data/datasets/ddnplus/hssd-hab_v0.2.5/train/content/train_task.json", "r") as f:
+        train_task = json.load(f)
+    path_to_split = "data/scene_datasets/hssd-hab/scene_splits.yaml"
+    with open(path_to_split, "r") as f:
+        scene_split = yaml.load(f, Loader=yaml.FullLoader)
+    all_task_instruction = []
+    for task in train_task:
+        all_task_instruction.append(task['task_instruction'])
+    traj = []
+    len_of_traj = {}
+    for i in range(500):
+        len_of_traj[i] = 0
+    all_traj = 0
+    num = 0
+    traj_num = 0
+    for file in tqdm(os.listdir(path)):
+        if 'event' in file or 'txt' in file:
+            continue
+        num += 1
+        for traj_file in tqdm(os.listdir(os.path.join(path, file)), desc=file):
+            if "metadata.json" in os.listdir(os.path.join(path, file, traj_file)):
+
+                len_of_curr_traj = len(os.listdir(os.path.join(path, file, traj_file, "rgb")))
+                with open(os.path.join(path, file, traj_file, "metadata.json"), "r") as f:
+                    metadata = json.load(f)
+                all_traj += 1
+                if len_of_curr_traj > 100:
+                    continue
+                if metadata['current_episode']['task_instruction'] in all_task_instruction:
+                    if len_of_curr_traj not in len_of_traj.keys():
+                        len_of_traj[len_of_curr_traj] = 0
+                    len_of_traj[len_of_curr_traj] += 1
+                    if metadata['current_episode']['scene_id'].split("/")[-1].split(".scene")[0] in scene_split['train']:
+                        traj.append(os.path.join(path, file, traj_file))
+                    else:
+                        print(metadata['current_episode']['scene_id'])
+                    traj_num += 1
+        if num == 3:
+            break
+    all_step = 0
+    all_traj = 0
+    for k, v in len_of_traj.items():
+        print("The number of trajectories with {} frames: {}".format(k, v))
+        all_step += k * v
+        all_traj += v
+
+    lengths = []
+    for length, count in len_of_traj.items():
+        lengths.extend([length] * count)
+    counter = Counter(lengths)
+    print("Average number of steps: {}".format(all_step / all_traj))
+    print("The total number of trajectories: {}".format(all_traj))
+    print("The number of trajectories in train set: {}".format(traj_num))
+
+    random.shuffle(traj)
+    train_traj = traj[:int(0.8 * len(traj))]
+    val_traj = traj[int(0.8 * len(traj)):]
+    # save train_traj as json
+    with open(os.path.join("dataset/train_traj.json"), "w") as f:
+        json.dump(train_traj, f, indent=4)
+    # save val_traj as json
+    with open(os.path.join("dataset/val_traj.json"), "w") as f:
+        json.dump(val_traj, f, indent=4)
+
+
 if __name__ == "__main__":
     args = parse_arguments()
     time_now = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
     args.time_now = time_now
-    # if args.running_mode == "local_data_collection":
-    #     run_in_parallel(args, time_now, target_fn=local_data_collection)
-    # if args.running_mode == "full_data_collection":
-    #     run_in_parallel(args, time_now, target_fn=full_data_collection)
+    if args.running_mode == "local_data_collection":
+        run_in_parallel(args, time_now, target_fn=local_data_collection)
+    if args.running_mode == "full_data_collection":
+        run_in_parallel(args, time_now, target_fn=full_data_collection)
+    if args.running_mode == "generate_metadata":
+        generate_metadata(args)
     # local_data_collection(args, time_now, rank=0)
-    full_data_collection(args, time_now, rank=0)
+    # full_data_collection(args, time_now, rank=0)

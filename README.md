@@ -102,7 +102,7 @@ In MO-DDN, we collect two different kind of trajectories, `local trajectory` and
 
 To collect `local trajectory`, run 
 ```
-python data_collection.py --running_mode=local_data_collection --workers=N --epoch=M --save_dir=path/to/save/dir --save_name=MODDN_local
+python data_collection.py --running_mode=local_data_collection --workers=N --epoch=M --save_dir=path/to/save/dir --save_name=MO-DDN_local
 ```
 
 This means that you will launch N environments, each collecting M local trajectories, for a total of N*M. Please replace `N` and `M` with two suitable integers depending on your machine's memory and CPU. For reference, my machine consists of two E5 2680V4, 128G RAM, one RTX 2080Ti 22G graphics card, and I set N=16, M=3100, which consumes about 24 hours or so to collect ~50000 local trajectories. Please note that this data can consume around 3T of space, make sure you have the space to store it.
@@ -114,6 +114,7 @@ python data_collection.py --running_mode=full_data_collection --workers=N --epoc
 
 For reference, my machine consists of two E5 2680V4, 128G RAM, one RTX 2080Ti 22G graphics card, and I set N=12, M=200, which consumes about 12 hours or so to collect ~20000 full trajectories.
 
+
 ## Training
 
 To train the attribute model, run
@@ -122,6 +123,17 @@ python train_attribute_model.py --save_dir=path/to/save/dir --save_name=attribut
 ```
 
 then obtain a model named `attribute_model_best.pth` in the `$save_dir$/$save_name$` directory.
+
+To train the Fine-Exploration Module, first generate the trajectory matadata by running
+```
+python data_collection.py --running_mode=generate_metadata --path_to_raw_traj=path/to/save/dir/MO-DDN_local/Year-Month-Day_Hour-Minute-Second
+```
+
+Then put the `attribute_model_best.pth` into `pretrained_models` and run
+```
+python train_fine_model.py --save_dir=path/to/save/dir --save_name=fine_exploration_module --epoch=30
+```
+then obtain fine_model_X.pth in the `$save_dir$/$save_name$/y-m-d-h-m` directory, where X is the epoch number. See the `eval_results.txt` file in the same directory for the evaluation results and pick the highest validation accuracy model for the next step.
 
 ## Contact
 If you have any suggestion or questions, please feel free to contact us:
