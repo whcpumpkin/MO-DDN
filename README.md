@@ -13,9 +13,9 @@ This repo is the official implementation of NeurIPS 2024 paper, [Multi-Object De
 - [x] Trajectory Collecting Code
 - [x] Utils Code
 - [x] Training
-- [ ] Testing
+- [x] Testing
 
-## Warning: I am currently refactoring my code. Although all code committed to the repository has been tested, there may still be some minor issues.  Feel free to ask any questions.
+##  I'm very sorry that due to personal reasons, I was unable to release all the weight and evaluation codes in a timely manner. If there are any issues with the current code, please feel free to contact me.
 
 ## Download
 We modified the HSSD dataset to include more object labels. You can download the modified HSSD dataset from [Hugging Face](https://huggingface.co/datasets/whcpumpkin/moddn-hssd) or [百度网盘](https://pan.baidu.com/s/1eLXxMUqsImlf47Sw71dVjw?pwd=hgg9).
