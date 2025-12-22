@@ -80,6 +80,8 @@ conda install habitat-sim=0.2.5 withbullet headless -c conda-forge -c aihabitat
 Then, install other dependencies:
 ```
 pip install -r requirements.txt
+git clone https://github.com/facebookresearch/detectron2.git
+python -m pip install -e detectron2
 ```
 
 ## Demo
@@ -88,6 +90,7 @@ We provide a very simple demo to show how to use our benchmark.
 python demo.py --task_mode=train --scene_mode=train
 ```
 `--task_mode` can be set to `train` or `val`. `--scene_mode` can be set to `train` or `val`. `train` mode means `seen` in our paper, while `val` mode means `unseen` in our paper.
+
 
 To ignore the habitat-sim log, you can set the following environment variables:
 
@@ -134,6 +137,47 @@ Then put the `attribute_model_best.pth` into `pretrained_models` and run
 python train_fine_model.py --save_dir=path/to/save/dir --save_name=fine_exploration_module --epoch=30
 ```
 then obtain fine_model_X.pth in the `$save_dir$/$save_name$/y-m-d-h-m` directory, where X is the epoch number. See the `eval_results.txt` file in the same directory for the evaluation results and pick the highest validation accuracy model for the next step.
+
+
+## Evaluation
+
+Before evaluation, you should download `GLEE_SwinL_Scaleup10m.pth` and put GLEE model into `GLEE_model` file.
+Download `openai/clip-vit-base-patch32` model, and put this model into `thirdparty/GLEE/`
+
+
+
+- **Script**: `evaluation_full_pipeline.py` — runs the full coarse-to-fine evaluation loop and saves metrics.
+
+- **Example** (run from repository root):
+
+```bash
+python evaluation_full_pipeline.py \
+  --eval_model_path pre_trained_models/il_agent.pth \
+  --task_mode val \
+  --epoch 500 \
+  --max_step 300 \
+  --device cuda
+```
+
+- **Where results go**: a JSON summary is written to `<save_dir>/<timestamp>/eval_metrics.json` (default `--save_dir` is `LLM+Fine`).
+
+- **Common arguments (short)**:
+  - `--eval_model_path`: path to a `.pth` checkpoint (file or folder). If a folder is provided the script will try common names or the latest `.pth` inside.
+  - `--task_mode`: `train` or `val` (which dataset split to run).
+  - `--epoch`: number of episodes to run (controls how many tasks are evaluated).
+  - `--max_step`: max steps per episode before forcing termination.
+  - `--device`: `cuda` or `cpu` (device used for models/compute).
+  - `--save_dir`: base directory to write per-run outputs and metrics.
+  - `--random_fine`: set to `1` to skip loading a trained fine-exploration agent and use random fine behavior.
+  - `--add_noise`: set to `1` to add small RGB/depth noise during evaluation (debugging/robustness).
+  - `--seed`: random seed for reproducible runs.
+
+- **Hints**:
+  - Make sure your conda env is activated and `habitat-lab` / `habitat-sim` are installed as described in Installation.
+  - To reduce simulator logs set `MAGNUM_LOG=quiet HABITAT_SIM_LOG=quiet` in your shell.
+  - See `utils/args.py` for a full list of available options and defaults.
+
+
 
 ## Contact
 If you have any suggestion or questions, please feel free to contact us:

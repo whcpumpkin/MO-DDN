@@ -445,5 +445,168 @@ class AgentModel(nn.Module):
         self.load_state_dict(torch.load(path))
 
 
+class FullAgent(nn.Module):
+
+    def __init__(self, args, agent, mapper, envs):
+        super(FullAgent, self).__init__()
+        self.args = args
+        self.agent = agent
+        self.mapper = mapper
+        # self.detector_runner = detector_runner
+        self.exploration_mode_list = ['corase', 'fine']
+        self.attribute_model = AttributeModel(args)
+        self.attribute_model.load_model(args.attribute_model_path)
+        with open("data/datasets/ddnplus/hssd-hab_v0.2.5/train/train.json", "r") as f:
+            self.object_list = json.load(f)
+        self.object_name_idx = self.object_list['category_to_task_category_id']
+        self.object_category_idx = [[obj.split('.n')[0]] for obj in self.object_name_idx.keys()] + [[' ']]
+        self.exploration_mode = 'Start Corase Exploration'
+        self.envs = envs
+        with open("dataset/instruction_feature_{}.json".format(args.ins_model_name), "r") as f:
+            self.instruction_feature = json.load(f)
+
+    def reset(self, agent_position, agent_rotation):
+        self.exploration_mode = 'Start Corase Exploration'
+        self.mapper.reset(agent_position, agent_rotation)
+        self.target_object_position = -1
+        self.visited_block_id = []
+        self.greedy_follower = DDNPlusShortestPathFollower(self.envs.sim, 0.5, False)
+
+    def forward(self, rgb_image, depth_image, text_input, hidden_state=None):
+        pass
+
+    def act(self, observation):
+        if self.exploration_mode == 'Start Corase Exploration':
+            self.target_object_position = self.start_corase_exploration(observation)
+            if type(self.target_object_position) == int:
+                print("random action due to no target object")
+                return random.randint(1, 3)
+            else:
+                agent_x, agent_z, agent_y = self.envs.sim.get_agent_state().position[:3]
+                self.target_object_position_habitat = self.target_object_position + self.mapper.initial_position
+                self.target_object_position_habitat = np.array([self.target_object_position_habitat[0], agent_z, self.target_object_position_habitat[1]])
+
+            self.exploration_mode = 'In Corase Exploration'
+
+            return self.in_corase_exploration(self.target_object_position_habitat, observation)
+        elif self.exploration_mode == 'In Fine Exploration':
+            return self.in_fine_exploration(observation)
+        elif self.exploration_mode == 'In Corase Exploration':
+            return self.in_corase_exploration(self.target_object_position_habitat, observation)
+
+    def start_corase_exploration(self, observation, record=True):
+        self.mapper.get_block_map()
+        self.block_quality_score = {}
+        self.block_quality_score_object = {}
+        agent_x, agent_z, agent_y = self.envs.sim.get_agent_state().position[:3]
+        for block_id in self.mapper.block_navigation_map.keys():
+            self.block_quality_score[block_id] = torch.tensor(0.0).to(self.args.device)
+        for block_id in self.mapper.block_map.keys():
+            self.block_quality_score[block_id] = torch.tensor(0.0).to(self.args.device)
+            if block_id in self.visited_block_id and self.args.debug == 0:
+                continue
+            obj_class = [obj['class'] for obj in self.mapper.block_map[block_id]]
+            if self.args.ins_attribute_encoder == "mlp":
+                ins_attribute_feature, obj_attribute_feature, obj_clip_feature, idx_ins, idx_obj = self.attribute_model.forward_map(observation['ddnplusgoal'][0], obj_class)
+                ins_attribute_feature_expand = ins_attribute_feature.repeat(obj_attribute_feature.shape[0], 1, 1).unsqueeze(2)
+                obj_attribute_feature_expand = obj_attribute_feature.unsqueeze(1)
+                cos_sim = F.cosine_similarity(ins_attribute_feature_expand, obj_attribute_feature_expand, dim=3).reshape(len(obj_class), -1)
+
+                cos_sim_max = cos_sim.max(dim=1).values
+
+                self.block_quality_score[block_id] += cos_sim_max.max()
+                self.block_quality_score_object[block_id] = obj_class[cos_sim_max.argmax()]
+            elif self.args.ins_attribute_encoder == "attribute":
+                basic_ins_attribute_feature, preferred_ins_attribute_feature, obj_attribute_feature, obj_clip_feature, basic_idx_ins, preferred_idx_ins, idx_obj = self.attribute_model.forward_map(observation['ddnplusgoal'], obj_class)
+
+                basic_ins_attribute_feature_expand = basic_ins_attribute_feature.repeat(obj_attribute_feature.shape[0], 1, 1).unsqueeze(2)
+                obj_attribute_feature_expand = obj_attribute_feature.unsqueeze(1)
+                basic_cos_sim = F.cosine_similarity(basic_ins_attribute_feature_expand, obj_attribute_feature_expand, dim=3).reshape(len(obj_class), -1)
+
+                basic_cos_sim_max = basic_cos_sim.max(dim=1).values
+                self.block_quality_score[block_id] += basic_cos_sim_max.max()
+                self.block_quality_score_object[block_id] = obj_class[basic_cos_sim_max.argmax()]
+
+                preferred_ins_attribute_feature_expand = preferred_ins_attribute_feature.repeat(obj_attribute_feature.shape[0], 1, 1).unsqueeze(2)
+                obj_attribute_feature_expand = obj_attribute_feature.unsqueeze(1)
+                preferred_cos_sim = F.cosine_similarity(preferred_ins_attribute_feature_expand, obj_attribute_feature_expand, dim=3).reshape(len(obj_class), -1)
+
+                preferred_cos_sim_max = preferred_cos_sim.max(dim=1).values
+                self.block_quality_score[block_id] += self.args.preferred_rate * preferred_cos_sim_max.max()
+                self.block_quality_score_object[block_id] = obj_class[preferred_cos_sim_max.argmax()]
+
+        if len(list(self.mapper.block_navigation_map.keys())) > 0:
+            no_visited_block_id = [block_id for block_id in self.mapper.block_navigation_map.keys() if block_id not in self.visited_block_id]
+            if len(no_visited_block_id) > 0:
+                max_goal_block_id = random.choice(no_visited_block_id)
+            else:
+                max_goal_block_id = random.choice(list(self.mapper.block_navigation_map.keys()))
+
+            for block_id in self.mapper.block_navigation_map.keys():
+                if self.block_quality_score[block_id] > self.block_quality_score[max_goal_block_id] and block_id not in self.visited_block_id:
+                    max_goal_block_id = block_id
+        else:
+            return -1
+        target_object_position = -1
+        if record:
+            self.visited_block_id.append(max_goal_block_id)
+        if max_goal_block_id in self.block_quality_score_object.keys():
+            obj_name = self.block_quality_score_object[max_goal_block_id]
+            for obj in self.mapper.block_map[max_goal_block_id]:
+                if obj['class'] == obj_name:
+                    target_object_position = obj['pcd'].get_center().cpu().numpy()
+        else:
+            sel = random.choice(self.mapper.block_navigation_map[max_goal_block_id])
+            if hasattr(sel, 'cpu'):
+                target_object_position = sel.cpu().numpy()
+            else:
+                target_object_position = np.array(sel)
+        return target_object_position
+
+    def in_corase_exploration(self, target_object_position_habitat, observation):
+
+        action_greedy = self.greedy_follower.get_next_action(self.target_object_position_habitat)
+        if action_greedy == 0 or action_greedy == -1:
+            self.exploration_mode = 'In Fine Exploration'
+            self.other_inputs = {}
+            self.other_inputs['prev_action'] = torch.ones((self.args.workers, 1)).to(self.args.device)
+            self.other_inputs["prev_hidden_h"] = torch.zeros((self.args.lstm_layer_num, self.args.workers, self.args.rnn_hidden_state_dim)).to(self.args.device)
+            self.other_inputs["prev_hidden_c"] = torch.zeros((self.args.lstm_layer_num, self.args.workers, self.args.rnn_hidden_state_dim)).to(self.args.device)
+            return self.in_fine_exploration(observation)
+        else:
+            return action_greedy
+
+    def in_fine_exploration(self, observation):
+        if self.args.random_fine > 0:
+            action_out = random.randint(1, 6)
+            # print("Random Fine Exploration, Action: ", action_out)
+            return action_out
+        # print("in fine exploration")
+        self.other_inputs['gps_compass'] = torch.tensor(observation['gps'].tolist() + observation['ddnpluscompass'].tolist())
+        action_out, action_probs, value, action_log_probs, action_dist_entropy, hidden_state = self.agent.act(observation['rgb'], observation['depth'], self.instruction_feature[observation['ddnplusgoal'][0]], self.other_inputs)
+        self.other_inputs['prev_action'] = action_out.squeeze(1).float()
+        self.other_inputs["prev_hidden_h"] = deepcopy(hidden_state[0])
+        self.other_inputs["prev_hidden_c"] = deepcopy(hidden_state[1])
+
+        action_out = action_out + 1
+
+        if action_out.item() == 6:
+            self.exploration_mode = 'Start Corase Exploration'
+        return action_out
+
+    def update(self, observation, agent_position, agent_rotation):
+        text_input = self.object_category_idx
+        # pred_instances = self.inference_detector(observation['rgb'], text_input, max_dets=10, score_thr=0.1)
+        self.mapper.update(observation['rgb'], observation['depth'], agent_position, agent_rotation, self.object_category_idx)
+
+    def obtain_position(self):
+        position_xyz_dict = {}
+        agent_x, agent_z, agent_y = self.envs.sim.get_agent_state().position[:3]
+        position_xyz_dict['agent'] = [agent_x, agent_y, agent_z]
+        for obj in self.mapper.object_entities:
+            position_xyz_dict[obj['class']] = obj['pcd'].get_center().cpu().numpy() + self.mapper.initial_position
+        return position_xyz_dict
+
+
 if __name__ == "__main__":
     pass
